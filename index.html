@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cyber Pilot</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="panel">
+  <div class="hud">
+    <div class="hud-g">
+      <div class="stat vida" id="stVida">❤️❤️❤️</div>
+      <div class="stat puntos">⭐ <span id="stPts">0</span></div>
+      <div class="stat combo" id="stCombo">🔥 x0</div>
+      <div class="stat escudo" id="stEscudo" style="background:#00d4ff;color:#fff;display:none;">🛡️ x1</div>
+      <div class="stat municion" id="stMunicion" style="display:none;">🔫 <span id="stBalas">0</span></div>
+    </div>
+    <div class="hud-g">
+      <div class="stat vel">⚡ <span id="stVel">60</span></div>
+      <div class="stat record" id="stRecord">🏆 0</div>
+      <div class="stat logros" onclick="mostrarLogros()">🏅 <span id="stLogros">0/0</span></div>
+      <div class="stat">P <span id="stPreg">0</span></div>
+      <button class="hud-btn" id="btnSound" onclick="toggleSound()" title="Sonido">🔊</button>
+      <button class="hud-btn" onclick="togglePausa()" title="Pausa">⏸</button>
+    </div>
+  </div>
+  <div class="vel-bar"><div class="vel-fill" id="velFill" style="width:20%"></div></div>
+
+  <div class="zona-juego" id="zonaJuego">
+    <canvas id="cv"></canvas>
+    <div id="spritesContainer" style="position:absolute; inset:0; pointer-events:none;"></div>
+    <div class="joystick" id="joystick">
+      <div class="joystick-knob" id="joystickKnob"></div>
+    </div>
+    <button class="btn-disparo" id="btnDisparo">
+      <span class="emoji">🔫</span>
+      <span class="txt">DISPARAR</span>
+    </button>
+  </div>
+
+  <div class="aviso" id="aviso"></div>
+  <div class="logro-toast" id="logroToast">
+    <div class="em">🏅</div>
+    <div class="txt">
+      <div class="t1">¡LOGRO DESBLOQUEADO!</div>
+      <div class="t2" id="logroToastNombre">Nombre</div>
+    </div>
+  </div>
+  <div class="boss-bar" id="bossBar">
+    <div class="boss-nombre" id="bossNombre">JEFE FINAL</div>
+    <div class="boss-fill" id="bossFill" style="width: 100%"></div>
+  </div>
+  <div class="overlay" id="overlayPregunta">
+    <div class="pregunta-box">
+      <div class="pregunta-top">
+        <span class="tag" id="tagTipo">⚡ TURBO</span>
+        <span class="timer-p" id="timerP">⏱ 12</span>
+      </div>
+      <div class="pregunta-texto" id="pregTexto"></div>
+      <div class="resultado" id="resultado"></div>
+      <div class="opciones" id="opciones"></div>
+      <div class="explicacion" id="explicacion"></div>
+    </div>
+  </div>
+  <div class="overlay-pausa" id="overlayPausa">
+    <div class="caja">
+      <div class="ico">⏸</div>
+      <h2>PAUSA</h2>
+      <p>Tomate un respiro, piloto.</p>
+      <button class="btn verde" onclick="togglePausa()">▶ CONTINUAR</button>
+      <button class="btn chico" onclick="location.reload()">🔁 REINICIAR</button>
+    </div>
+  </div>
+  <div class="overlay-ini oculto" id="overlayLogros">
+    <div class="caja">
+      <div class="ico">🏅</div>
+      <h2>LOGROS</h2>
+      <p style="font-size:0.85em;">Desbloqueá logros mientras jugás.</p>
+      <div class="logros-lista" id="logrosLista"></div>
+      <button class="btn rojo" id="btnReiniciarLogros" onclick="location.reload()" style="display:none;">🔁 EMPEZAR DE NUEVO</button>
+      <button class="btn" onclick="cerrarLogros()" id="btnCerrarLogros">CERRAR</button>
+    </div>
+  </div>
+  <div class="overlay-ini" id="overlayIni">
+    <div class="caja">
+      <div class="ico">✈️</div>
+      <h1>CYBER PILOT</h1>
+      <p>Piloteá tu avión por el ciberespacio. Esquivá amenazas, atrapá power-ups y respondé para acelerar.</p>
+      <div class="instrucciones">
+        <div class="ins"><b>⬆️⬇️⬅️➡️</b>4 direcciones</div>
+        <div class="ins amar"><b>🔀 2 TECLAS</b>¡Diagonal!</div>
+        <div class="ins rojo"><b>💀 PELIGRO</b>Esquivá enemigos</div>
+        <div class="ins verde"><b>❤️ VIDA</b>Respondé bien +vida</div>
+        <div class="ins azul"><b>🛡️ ESCUDO</b>Te protege 1 golpe</div>
+        <div class="ins morado"><b>👹 JEFES</b>¡Disparales con 🔫!</div>
+      </div>
+      <div class="config-row">
+        <span>🎵 Música</span>
+        <div class="toggle" id="toggleMusica">
+          <button class="toggle-btn activo" data-v="on">SÍ</button>
+          <button class="toggle-btn" data-v="off">NO</button>
+        </div>
+      </div>
+      <button class="btn" onclick="iniciar()">▶ DESPEGAR</button>
+      <button class="btn morado chico" onclick="mostrarLogros()">🏅 LOGROS</button>
+    </div>
+  </div>
+  <div class="overlay-ini oculto" id="overlayFin">
+    <div class="caja">
+      <div class="ico" id="finIco">🏆</div>
+      <h2 id="finTitulo">¡BUEN VUELO!</h2>
+      <div class="stat-final">
+        <div class="box-sf">
+          <div class="n" id="finPts">0</div>
+          <div class="l">PUNTOS</div>
+        </div>
+        <div class="box-sf">
+          <div class="n" id="finAciertos">0</div>
+          <div class="l">ACIERTOS</div>
+        </div>
+        <div class="box-sf">
+          <div class="n" id="finVel">0</div>
+          <div class="l">VEL MAX</div>
+        </div>
+      </div>
+      <p id="finRango" style="color:#ff4466;font-family:'Bangers';font-size:1.2em;letter-spacing:2px;"></p>
+      <p id="finRecord" style="color:#ff8800;font-weight:900;font-size:0.95em;"></p>
+      <p id="finLogros" style="color:#a855f7;font-weight:900;font-size:0.95em;"></p>
+      <p style="font-size:0.85em;">Aprendiste sobre ciberseguridad volando.</p>
+      <button class="btn rojo" onclick="location.reload()">🔁 VOLVER A VOLAR</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
