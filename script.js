@@ -189,7 +189,8 @@ const st = {
   escudos: 0, escudosTotal: 0, invulnerable: 0,
   sonidoOn: true, musicaOn: true,
   record: parseInt(localStorage.getItem('cyberpilot_record') || '0'),
-  jefe: null, jefeActivo: false, proximoJefeEn: 2000, jefesDerrotados: 0,
+  jefe: null, jefeActivo: false, proximoJefeEn: 1500, jefesDerrotados: 0,
+  avisoJefeMostrado: false,
   balasJugador: [],
   cooldownDisparo: 0,
   puedeDisparar: false,
@@ -458,7 +459,10 @@ function iniciar() {
   st.spawnObs = 0; st.spawnPot = 0; st.pregIdx = 0;
   st.pregRonda = [...preguntas].sort(() => Math.random() - 0.5);
   st.shake = 0; st.escudos = 0; st.escudosTotal = 0; st.invulnerable = 0;
-  st.jefe = null; st.jefeActivo = false; st.proximoJefeEn = 2000; st.jefesDerrotados = 0;
+  st.jefe = null; st.jefeActivo = false; 
+  st.proximoJefeEn = 1500; // 25 segundos a 60fps
+  st.jefesDerrotados = 0;
+  st.avisoJefeMostrado = false;
   st.joystickActivo = false; st.joystickX = 0; st.joystickY = 0;
 
   spritesContainer.innerHTML = '';
@@ -587,7 +591,14 @@ function actualizar(dt) {
   st.pajaros.forEach(p => { p.x -= p.v * scrollVel * dt; if (p.x < -80) { p.x = W + 80; p.y = 60 + Math.random() * 120; } });
   st.mundoScroll += scrollVel * dt;
 
-  if (!st.jefeActivo && st.pts >= st.proximoJefeEn) spawnJefe();
+  // ===== APARICIÓN DEL JEFE (por tiempo) =====
+  if (!st.jefeActivo && st.tiempo >= st.proximoJefeEn) spawnJefe();
+  
+  // Aviso previo 3 segundos antes
+  if (!st.jefeActivo && !st.avisoJefeMostrado && st.tiempo >= st.proximoJefeEn - 180) {
+    st.avisoJefeMostrado = true;
+    mostrarAviso('⚠️ ¡JEFE EN 3 SEG!', 'jefe');
+  }
 
   if (!st.jefeActivo) {
     st.spawnObs += dt;
@@ -660,7 +671,8 @@ function actualizar(dt) {
 
   if (st.shake > 0) st.shake -= dt;
 
-  st.pts += Math.floor(st.vel / 100 * dt);
+  // Puntos más rápidos para que sea dinámico
+  st.pts += Math.floor(st.vel / 30 * dt);
   actualizarHUD();
 
   if (st.pts >= 100 && !logrosDesbloqueados.includes('pts_100')) desbloquearLogro('pts_100');
@@ -738,7 +750,8 @@ function spawnPotenciador() {
 function spawnJefe() {
   st.jefeActivo = true;
   st.puedeDisparar = true;
-  const nivel = Math.floor(st.pts / 2000);
+  // Nivel corregido: mínimo 1
+  const nivel = Math.max(1, Math.floor(st.pts / 2000) + 1);
   const vidasMax = 300 + (nivel - 1) * 150;
   st.jefe = {
     x: W + 200, y: H / 2,
@@ -838,7 +851,9 @@ function derrotarJefe() {
   sfxTurbo();
   st.pts += 500;
   st.jefesDerrotados++;
-  st.proximoJefeEn += 2000;
+  // Siguiente jefe: 25 segundos después
+  st.proximoJefeEn = st.tiempo + 1500;
+  st.avisoJefeMostrado = false;
   st.jefeActivo = false;
   st.jefe = null;
   st.puedeDisparar = false;
